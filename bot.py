@@ -88,6 +88,6 @@ def stop(bot, update):
 	except Exception:
 		pass
 
-db.add_handler(CommandHandler(['stop', 'stop@an_anonymous_bot'], stop))
+dp.add_handler(CommandHandler(['stop', 'stop@an_anonymous_bot'], stop))
 
 updater.start_polling()
