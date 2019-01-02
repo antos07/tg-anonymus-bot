@@ -63,8 +63,11 @@ def get_my_last_msgs(bot, update, args):
 		msgs = msgs[-1 * min(cnt, len(msgs)):]
 		for msg in msgs:
 			text = msg.from_user.mention_markdown() + ":\n_" + msg.text + "_"
-			update.effective_chat.send_message(text, parse_mode = 'Markdown', disable_web_page_preview = True,
-			 reply_to_message_id = msg.reply_to_message.message_id if msg else None)
+			try:
+				update.effective_chat.send_message(text, parse_mode = 'Markdown', disable_web_page_preview = True,
+			 		reply_to_message_id = msg.reply_to_message.message_id if msg.reply_to_message else None)
+			except Exception:
+				update.effective_chat.send_message(text, parse_mode = 'Markdown', disable_web_page_preview = True)
 		try:
 			update.message.delete()
 		except Exception:
@@ -76,5 +79,3 @@ dp.add_handler(CommandHandler(['get_my_last_messages', 'get_my_last_messages@an_
 
 
 updater.start_polling()
-#sleep(60)
-#updater.stop()
