@@ -48,7 +48,32 @@ def recieved_msg(bot, update):
 	else:
 		update.effective_chat.send_message('Пропишите команду "/start"')
 
-dp.add_handler(MessageHandler(Filters.all, recieved_msg))
+dp.add_handler(MessageHandler(Filters.text, recieved_msg))
+
+def get_my_last_msgs(bot, update, args):
+	if update.message.chat_id in data:
+		chat_data = data[update.message.chat_id]
+		if not update.message.from_user.id in chat_data[USERS]:
+			update.effective_chat.send_message('Вы не написали еще ни одного сообщения')
+		msgs = chat_data[USERS][update.message.from_user.id]
+		try:
+			cnt = int(args[0])
+		except Exception:
+			cnt = 1
+		msgs = msgs[-1 * min(cnt, len(msgs)):]
+		for msg in msgs:
+			text = msg.from_user.mention_markdown() + ":\n_" + msg.text + "_"
+			update.effective_chat.send_message(text, parse_mode = 'Markdown', disable_web_page_preview = True,
+			 reply_to_message_id = msg.reply_to_message.message_id if msg else None)
+		try:
+			update.message.delete()
+		except Exception:
+			pass
+	else:
+		update.effective_chat.send_message('Пропишите команду "/start"')
+
+dp.add_handler(CommandHandler(['get_my_last_messages', 'get_my_last_messages@an_anonymous_bot'], get_my_last_msgs, pass_args = True))
+
 
 updater.start_polling()
 #sleep(60)
