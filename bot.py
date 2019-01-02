@@ -45,8 +45,6 @@ def recieved_msg(bot, update):
 					user_msgs.pop(0)
 			else:
 				chat_data[USERS].update({update.message.from_user.id : [update.message]})
-	else:
-		update.effective_chat.send_message('Пропишите команду "/start"')
 
 dp.add_handler(MessageHandler(Filters.text, recieved_msg))
 
@@ -79,10 +77,11 @@ def get_my_last_msgs(bot, update, args):
 dp.add_handler(CommandHandler(['get_my_last_messages', 'get_my_last_messages@an_anonymous_bot'], get_my_last_msgs, pass_args = True))
 
 def stop(bot, update):
-	if not update.effective_chat.chat_id in data:
+	if not update.message.chat_id in data:
 		update.effective_chat.send_message('Я еще не запущен')
 		return
-	del data[update.effective_chat.chat_id]
+	del data[update.effective_chat.id]
+	update.effective_chat.send_message('Я отключен')
 	try:
 		update.message.delete()
 	except Exception:
