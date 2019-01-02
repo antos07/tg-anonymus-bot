@@ -55,6 +55,7 @@ def get_my_last_msgs(bot, update, args):
 		chat_data = data[update.message.chat_id]
 		if not update.message.from_user.id in chat_data[USERS]:
 			update.effective_chat.send_message('Вы не написали еще ни одного сообщения')
+			return
 		msgs = chat_data[USERS][update.message.from_user.id]
 		try:
 			cnt = int(args[0])
@@ -77,5 +78,16 @@ def get_my_last_msgs(bot, update, args):
 
 dp.add_handler(CommandHandler(['get_my_last_messages', 'get_my_last_messages@an_anonymous_bot'], get_my_last_msgs, pass_args = True))
 
+def stop(bot, update):
+	if not update.effective_chat.chat_id in data:
+		update.effective_chat.send_message('Я еще не запущен')
+		return
+	del data[update.effective_chat.chat_id]
+	try:
+		update.message.delete()
+	except Exception:
+		pass
+
+db.add_handler(CommandHandler(['stop', 'stop@an_anonymous_bot'], stop))
 
 updater.start_polling()
