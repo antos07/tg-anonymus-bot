@@ -1,11 +1,17 @@
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
-from time import sleep
+import _pickle
 
 TOKEN = "749933056:AAFwRZFQqllbUyvprcNoYHn2dAvIpsKWSMY"
 
-updater = Updater(TOKEN)
-data = {}
+with open('dump.data', 'rb') as f:
+	data = _pickle.load(f)
+
+def sig_handler(signum, frame):
+	with open('dump.data', 'wb') as f:
+		_pickle.dump(data, f)
+
+updater = Updater(TOKEN, user_sig_handler = sig_handler)
 LAST = 'last'
 USERS = 'users'
 max_cnt = 20
@@ -117,3 +123,4 @@ def stop(bot, update):
 dp.add_handler(CommandHandler(['stop', 'stop@an_anonymous_bot'], stop))
 
 updater.start_polling()
+updater.idle()
