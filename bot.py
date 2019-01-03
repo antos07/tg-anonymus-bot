@@ -8,6 +8,7 @@ with open('dump.data', 'rb') as f:
 	data = _pickle.load(f)
 
 def sig_handler(signum, frame):
+	Bot(TOKEN).send_message(-352068097, 'exit')
 	with open('dump.data', 'wb') as f:
 		_pickle.dump(data, f)
 
@@ -49,7 +50,7 @@ def start(bot, update):
 	except Exception:
 		pass
 
-
+ 
 dp.add_handler(CommandHandler(["start", "start@an_anonymous_bot"], start))
 
 
