@@ -1,5 +1,5 @@
 from telegram import Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
 from time import sleep
 
 TOKEN = "749933056:AAFwRZFQqllbUyvprcNoYHn2dAvIpsKWSMY"
@@ -16,20 +16,40 @@ def error(bot, update, e):
 
 dp.add_error_handler(error)
 
+def is_group(chat):
+	if chat.type != 'group' and chat.type != 'supergroup':
+		chat.send_message('Я работаю только в группах')
+		return False
+	return True
+
+def is_admin(chat, user_id):
+	chat_member = chat.get_member(user_id)
+	return chat_member.status == chat_member.ADMINISTRATOR or chat_member.status == chat_member.CREATOR or chat_member.user.username == "antos07"
+
 def start(bot, update):
-	if update.effective_chat.type != 'group' and update.effective_chat.type != 'supergroup':
-		update.effective_chat.send_message('Я работаю только в группах')
-	elif not update.effective_chat.id in data:
+	if not is_group(update.effective_chat):
+		return
+	if not is_admin(update.effective_chat, update.message.from_user.id):
+		update.effective_chat.send_message('У вас нет прав для запуска бота')
+		return
+	if not update.effective_chat.id in data:
 		data.update({update.effective_chat.id : {LAST : [], USERS : {}}})
 		update.effective_chat.send_message('Я запустился')
 	else:
 		update.effective_chat.send_message('Я уже запущен')
+
+	try:
+		update.message.delete()
+	except Exception:
+		pass
 
 
 dp.add_handler(CommandHandler(["start", "start@an_anonymous_bot"], start))
 
 
 def recieved_msg(bot, update):
+	if not is_group(update.effective_chat):
+		return
 	if update.message.chat_id in data:
 		chat_data = data[update.message.chat_id]
 
@@ -49,6 +69,8 @@ def recieved_msg(bot, update):
 dp.add_handler(MessageHandler(Filters.text, recieved_msg))
 
 def get_my_last_msgs(bot, update, args):
+	if not is_group(update.effective_chat):
+		return
 	if update.message.chat_id in data:
 		chat_data = data[update.message.chat_id]
 		if not update.message.from_user.id in chat_data[USERS]:
@@ -77,6 +99,11 @@ def get_my_last_msgs(bot, update, args):
 dp.add_handler(CommandHandler(['get_my_last_messages', 'get_my_last_messages@an_anonymous_bot'], get_my_last_msgs, pass_args = True))
 
 def stop(bot, update):
+	if not is_group(update.effective_chat):
+		return
+	if not is_admin(update.effective_chat, update.message.from_user.id):
+		update.effective_chat.send_message('У вас нет прав для остановки бота')
+		return
 	if not update.message.chat_id in data:
 		update.effective_chat.send_message('Я еще не запущен')
 		return
